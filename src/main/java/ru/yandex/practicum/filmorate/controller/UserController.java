@@ -22,44 +22,19 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getUsers() {
+        log.info("Вызван метод getUsers()");
         return users.values();
     }
 
     @PostMapping
     public User create(@RequestBody User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Имейл должен быть указан и содержать символ '@'");
-            throw new ConditionsNotMetException("Имейл должен быть указан и содержать символ '@'");
-        }
 
-        boolean emailExist = users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()));
-        if (emailExist) {
-            log.warn("Этот имейл уже используется");
-            throw new DuplicateDataException("Этот имейл уже используется");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("login не должен быть пустым или содержать пробелы");
-            throw new ConditionsNotMetException("login не должен быть пустым или содержать пробелы");
-        }
-
-        boolean loginExist = users.values().stream()
-                .anyMatch(u -> u.getLogin().equals(user.getLogin()));
-        if (loginExist) {
-            log.warn("Этот логин уже используется");
-            throw new DuplicateDataException("Этот логин уже используется");
-        }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.info("Имя пользователя не передано. Будет присвоено имя  " + user.getLogin());
-            user.setName(user.getLogin());
-        }
-
-        LocalDate now = LocalDate.now();
-        if (user.getBirthday() == null || user.getBirthday().isAfter(now)) {
-            log.warn("Дата рождения не может быть в будущем");
-            throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
-        }
+        validateEmail(user);
+        checkEmailUnique(user.getEmail(), null);
+        validateName(user);
+        validateLogin(user);
+        checkLoginUnique(user.getLogin(), null);
+        validateBirthday(user);
 
         user.setId(GeneratorId.generateId(users));
         log.info("Создан пользователь " + user.toString());
@@ -74,58 +49,34 @@ public class UserController {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
         if (users.containsKey(newUser.getId())) {
-            if (newUser.getName() == null || newUser.getName().isBlank()) {
-                if (newUser.getLogin() != null) {
-                    log.warn("Передали пустое имя -  подставляем login");
-                    newUser.setName(newUser.getLogin());
-                }
-            }
-
+            validateName(newUser);
             User oldUser = users.get(newUser.getId());
-            if (newUser.getEmail() != null) {
-                if (newUser.getEmail().isBlank() || !newUser.getEmail().contains("@")) {
-                    log.warn("Имейл должен быть указан и содержать символ '@'");
-                    throw new ConditionsNotMetException("Имейл должен быть указан и содержать символ '@'");
-                }
 
-                boolean emailExist = users.values().stream()
-                        .filter(u -> !u.getId().equals(newUser.getId()))
-                        .anyMatch(u -> u.getEmail().equals(newUser.getEmail()));
-                if (emailExist) {
-                    log.warn("Этот имейл уже используется");
-                    throw new DuplicateDataException("Этот имейл уже используется");
-                }
+            if (newUser.getEmail() != null) {
+                validateEmail(newUser);
+                checkEmailUnique(newUser.getEmail(), newUser.getId());
+
                 log.info("Email изменен с " + oldUser.getEmail() + " на " + newUser.getEmail());
                 oldUser.setEmail(newUser.getEmail());
             }
 
             if (newUser.getLogin() != null) {
-                if (newUser.getLogin().isBlank() || newUser.getLogin().contains(" ")) {
-                    log.warn("login не должен быть пустым или содержать пробелы");
-                    throw new ConditionsNotMetException("login не должен быть пустым или содержать пробелы");
-                }
+                validateLogin(newUser);
+                checkLoginUnique(newUser.getLogin(), newUser.getId());
 
-                boolean loginExist = users.values().stream()
-                        .filter(u -> !u.getId().equals(newUser.getId()))
-                        .anyMatch(u -> u.getLogin().equals(newUser.getLogin()));
-                if (loginExist) {
-                    log.warn("Этот логин уже используется");
-                    throw new DuplicateDataException("Этот логин уже используется");
-                }
                 log.info("Login изменен с " + oldUser.getLogin() + " на " + newUser.getLogin());
                 oldUser.setLogin(newUser.getLogin());
             }
 
             if (newUser.getName() != null) {
+                validateName(newUser);
                 log.info("Имя изменено с " + oldUser.getName() + " на " + newUser.getName());
                 oldUser.setName(newUser.getName());
             }
 
-            LocalDate now = LocalDate.now();
-            if (newUser.getBirthday() != null && newUser.getBirthday().isAfter(now)) {
-                log.warn("Дата рождения не может быть в будущем");
-                throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
-            } else if (newUser.getBirthday() != null) {
+            if (newUser.getBirthday() != null) {
+                validateBirthday(newUser);
+
                 log.info("Дата рождения изменена с " + oldUser.getBirthday() + " на " + newUser.getBirthday());
                 oldUser.setBirthday(newUser.getBirthday());
             }
@@ -133,5 +84,55 @@ public class UserController {
             return oldUser;
         }
         throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+    }
+// Методы валидаторы
+
+    private void validateEmail(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            log.warn("Имейл должен быть указан и содержать символ '@'");
+            throw new ConditionsNotMetException("Имейл должен быть указан и содержать символ '@'");
+        }
+    }
+
+    private void checkEmailUnique(String email, Long excludeUserId) {
+        boolean emailExist = users.values().stream()
+                .noneMatch(u -> (excludeUserId == null || !u.getId().equals(excludeUserId))
+                        && u.getEmail().equals(email));
+        if (!emailExist) {
+            log.warn("Этот имейл уже используется");
+            throw new DuplicateDataException("Этот имейл уже используется");
+        }
+    }
+
+    private void validateLogin(User user) {
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            log.warn("login не должен быть пустым или содержать пробелы");
+            throw new ConditionsNotMetException("login не должен быть пустым или содержать пробелы");
+        }
+    }
+
+    private void checkLoginUnique(String login, Long excludeUserId) {
+        boolean loginExist = users.values().stream()
+                .noneMatch(u -> (excludeUserId == null || !u.getId().equals(excludeUserId))
+                        && u.getLogin().equals(login));
+        if (!loginExist) {
+            log.warn("Этот имейл уже используется");
+            throw new DuplicateDataException("Этот имейл уже используется");
+        }
+    }
+
+    private void validateName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.info("Имя пользователя не передано. Будет присвоено имя  " + user.getLogin());
+            user.setName(user.getLogin());
+        }
+    }
+
+    private void validateBirthday(User user) {
+        LocalDate now = LocalDate.now();
+        if (user.getBirthday() == null || user.getBirthday().isAfter(now)) {
+            log.warn("Дата рождения не может быть в будущем");
+            throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
+        }
     }
 }
