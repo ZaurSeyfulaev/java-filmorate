@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.exceptions.DuplicateDataException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 
 @RestControllerAdvice
-public class ErrorHandler{
+public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(ConditionsNotMetException e) {
         return new ErrorResponse(e.getMessage());
