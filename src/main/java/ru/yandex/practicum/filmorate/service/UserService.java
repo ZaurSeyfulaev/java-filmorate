@@ -68,8 +68,8 @@ public class UserService {
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
         validateUserAndFriendIdsNotNull(userId, otherUserId);
         validateNotSameUser(userId
-                ,otherUserId
-                ,"Попытка поиска общих друзей у с самим собой себя в друзья самого себя");
+                , otherUserId
+                , "Попытка поиска общих друзей у с самим собой себя в друзья самого себя");
 
         User user = userStorage.getUserById(userId);
         User otherUser = userStorage.getUserById(otherUserId);
