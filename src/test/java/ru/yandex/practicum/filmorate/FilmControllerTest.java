@@ -216,7 +216,7 @@ class FilmControllerTest {
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> filmController.likeFilm(nonExistentFilmId, createdUser.getId()));
-        assertTrue(ex.getMessage().contains("Фильм не найден"));
+        assertTrue(ex.getMessage().contains("Фильм с id = " + nonExistentFilmId + " не найден"));
     }
 
     @DirtiesContext
@@ -240,7 +240,7 @@ class FilmControllerTest {
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> filmController.deleteFilm(nonExistentFilmId, createdUser.getId()));
-        assertTrue(ex.getMessage().contains("Фильм не найден"));
+        assertTrue(ex.getMessage().contains("Фильм с id = " + nonExistentFilmId + " не найден"));
     }
 
     @DirtiesContext

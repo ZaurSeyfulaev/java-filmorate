@@ -11,7 +11,8 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -261,12 +262,12 @@ class UserControllerTest {
         controller.addFriend(user1.getId(), friend.getId());
 
         // Получаем список друзей
-        Collection<User> friends = controller.getFriends(user1.getId());
+        List<Optional<User>> friends = controller.getFriends(user1.getId());
 
         assertEquals(1, friends.size());
-        User firstFriend = friends.iterator().next();
-        assertEquals(friend.getId(), firstFriend.getId());
-        assertEquals(friend.getLogin(), firstFriend.getLogin());
+        Optional<User> firstFriend = friends.iterator().next();
+        assertEquals(friend.getId(), firstFriend.get().getId());
+        assertEquals(friend.getLogin(), firstFriend.get().getLogin());
     }
 
     @DirtiesContext
@@ -303,12 +304,12 @@ class UserControllerTest {
         controller.addFriend(user2Created.getId(), commonFriendCreated.getId());
 
         // Получаем общих друзей
-        Collection<User> commonFriends = controller.getCommonFriends(user1.getId(), user2Created.getId());
+        List<Optional<User>> commonFriends = controller.getCommonFriends(user1.getId(), user2Created.getId());
 
         assertEquals(1, commonFriends.size());
-        User result = commonFriends.iterator().next();
-        assertEquals(commonFriendCreated.getId(), result.getId());
-        assertEquals(commonFriendCreated.getLogin(), result.getLogin());
+        Optional<User> result = commonFriends.iterator().next();
+        assertEquals(commonFriendCreated.getId(), result.get().getId());
+        assertEquals(commonFriendCreated.getLogin(), result.get().getLogin());
     }
 
     @DirtiesContext

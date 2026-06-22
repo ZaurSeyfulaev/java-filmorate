@@ -4,38 +4,37 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final InMemoryUserStorage inMemoryUserStorage;
     private final UserService userService;
 
-    UserController(InMemoryUserStorage inMemoryUserStorage, UserService userService) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    UserController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping
     public Collection<User> getUsers() {
         log.info("Вызван метод getUsers()");
-        return inMemoryUserStorage.getAllUsers();
+        return userService.getAllUsers();
     }
 
     @PostMapping
     public User create(@RequestBody User user) {
         log.info("Вызван метод createUser для создания нового пользователя");
-        return inMemoryUserStorage.createUser(user);
+        return userService.createUser(user);
     }
 
     @PutMapping
     public User update(@RequestBody User newUser) {
         log.info("Вызван метод updateUser для создания нового пользователя");
-        return inMemoryUserStorage.updateUser(newUser);
+        return userService.updateUser(newUser);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -51,13 +50,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(@PathVariable Long id) {
+    public List<Optional<User>> getFriends(@PathVariable Long id) {
         log.info("Получаем список друзей");
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<Optional<User>> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         log.info("Получаем список общих друзей");
         return userService.getCommonFriends(id, otherId);
     }
