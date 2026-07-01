@@ -6,8 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Film.
@@ -18,6 +17,8 @@ import java.util.Set;
 @ToString
 public class Film {
     Set<Long> likes = new HashSet<>();
+    Map<Long, List<String>> genre = new HashMap<>();
+    String rating;
     Long id;
     String name;
     String description;
