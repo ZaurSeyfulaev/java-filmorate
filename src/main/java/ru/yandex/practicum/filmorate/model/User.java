@@ -14,5 +14,4 @@ public class User {
     String login;
     String name;
     LocalDate birthday;
-    boolean friendStatus;
 }

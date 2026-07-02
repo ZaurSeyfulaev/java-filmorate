@@ -59,3 +59,56 @@ LEFT JOIN Film_Genre fg ON gt.id = fg.genre_type_id
 GROUP BY gt.id, gt.genre_type
 ORDER BY film_count DESC;
 ```
+<font size="4">6. Получение списка друзей пользователя</font>
+```
+SELECT u.id,
+       u.username,
+       u.email,
+       u.login,
+       u.birthday
+FROM User u
+JOIN Friends f
+    ON u.id = f.friend_id
+JOIN Friend_Status fs
+    ON f.friend_status_id = fs.status_id
+WHERE f.user_id = :userId
+  AND fs.status_tyoe = TRUE;
+```
+
+<font size="4">7. Получение списка неподтвержденных друзей пользователя</font>
+```
+SELECT u.id,
+       u.username,
+       u.email,
+       u.login,
+       u.birthday
+FROM User u
+JOIN Friends f
+    ON u.id = f.friend_id
+JOIN Friend_Status fs
+    ON f.friend_status_id = fs.status_id
+WHERE f.user_id = :userId
+  AND fs.status_tyoe = FALSE;
+```
+
+<font size="4">8. Проверка общих друзей двух пользователей</font>
+```
+SELECT u.id,
+       u.username,
+       u.email,
+       u.login,
+       u.birthday
+FROM User u
+JOIN Friends f1
+    ON u.id = f1.friend_id
+JOIN Friends f2
+    ON u.id = f2.friend_id
+JOIN Friend_Status fs1
+    ON f1.friend_status_id = fs1.status_id
+JOIN Friend_Status fs2
+    ON f2.friend_status_id = fs2.status_id
+WHERE f1.user_id = :userId1
+  AND f2.user_id = :userId2
+  AND fs1.status_tyoe = TRUE
+  AND fs2.status_tyoe = TRUE;
+```

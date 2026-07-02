@@ -17,8 +17,8 @@ import java.util.*;
 @ToString
 public class Film {
     Set<Long> likes = new HashSet<>();
-    Map<Long, List<String>> genre = new HashMap<>();
-    String rating;
+    List<String> genre;
+    Rating rating;
     Long id;
     String name;
     String description;
