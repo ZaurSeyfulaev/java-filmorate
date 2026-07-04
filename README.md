@@ -58,7 +58,7 @@ EXTRACT(YEAR FROM release_date) > 2020;
 <font size="4">3. Количество лайков у каждого фильма (с названием)</font>
 
 ```
-SELECT f.id, f.name, COUNT(*) AS likes_count
+SELECT f.id, f.name, COUNT(l.user_id) AS likes_count
 FROM Film f
 LEFT JOIN Likes l ON f.id = l.film_id
 GROUP BY f.id, f.name
@@ -68,7 +68,7 @@ ORDER BY likes_count DESC;
 <font size="4">4. Топ-10 самых популярных фильмов по количеству лайков</font>
 
 ```
-SELECT f.id, f.name, COUNT(*) AS likes_count
+SELECT f.id, f.name, COUNT(l.user_id) AS likes_count
 FROM Film f
 LEFT JOIN Likes l ON f.id = l.film_id
 GROUP BY f.id, f.name
@@ -89,7 +89,7 @@ ORDER BY film_count DESC;
 <font size="4">6. Получение списка друзей пользователя</font>
 
 ```
-ELECT u.id,
+SELECT u.id,
        u.username,
        u.email,
        u.login,
