@@ -31,8 +31,7 @@ public class FilmGenreDbStorage extends BaseRepository {
         List<Long> genreIds = filmGenres
                 .stream()
                 .map(Genres::getId)
-                .map(id ->
-                        {
+                .map(id -> {
                             getGenreById(id).orElseThrow(() ->
                                     new NotFoundException("Genre с id " + filmId + " не найден"));
                             return id;
