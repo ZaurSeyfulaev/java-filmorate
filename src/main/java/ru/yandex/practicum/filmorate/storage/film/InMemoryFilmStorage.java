@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.tools.GeneratorId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {

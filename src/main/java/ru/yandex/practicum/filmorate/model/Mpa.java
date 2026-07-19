@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @EqualsAndHashCode(of = "id")
 @ToString
-public class Rating {
+public class Mpa {
     private Long id;
-    private String ratingType;
+    private String name;
 }
