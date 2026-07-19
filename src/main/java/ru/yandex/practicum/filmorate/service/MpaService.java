@@ -19,14 +19,14 @@ public class MpaService {
         this.mpaDbStorage = mpaDbStorage;
     }
 
-    public List<MpaDto> getMpa(){
+    public List<MpaDto> getMpa() {
         return mpaDbStorage.selectMpa().stream()
                 .map(MpaMapper::mapToMpaDto)
                 .toList();
     }
 
-    public MpaDto getMpaById(Long id){
-        Mpa mpa =  mpaDbStorage.selectMpaById(id).orElseThrow(()->
+    public MpaDto getMpaById(Long id) {
+        Mpa mpa =  mpaDbStorage.selectMpaById(id).orElseThrow(() ->
                 new NotFoundException("Mpa с id = " + id + " не найден"));
         return MpaMapper.mapToMpaDto(mpa);
     }

@@ -19,14 +19,14 @@ public class GenresService {
         this.genresDbStorage = genresDbStorage;
     }
 
-    public List<GenresDto> getGenres(){
+    public List<GenresDto> getGenres() {
         return genresDbStorage.selectAllGenreTypes().stream()
                 .map(GenresMapper::mapToGenresDto)
                 .toList();
     }
 
-    public GenresDto getGenresById(Long id){
-        Genres genres =  genresDbStorage.selectGenreTypeById(id).orElseThrow(()->
+    public GenresDto getGenresById(Long id) {
+        Genres genres =  genresDbStorage.selectGenreTypeById(id).orElseThrow(() ->
                 new NotFoundException("Жанр с id = " + id + " не найден"));
         return GenresMapper.mapToGenresDto(genres);
     }
