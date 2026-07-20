@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Deprecated
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {

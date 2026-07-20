@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleNotFoundException(ConditionsNotMetException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
