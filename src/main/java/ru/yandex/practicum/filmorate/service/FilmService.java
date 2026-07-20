@@ -124,8 +124,8 @@ public class FilmService {
 
     private List<Film> addGenreInFilm(List<Film> films) {
 
-        List<Long> filmIds = films.stream().
-                map(Film::getId).toList();
+        List<Long> filmIds = films.stream()
+                .map(Film::getId).toList();
 
         Map<Long, List<Genres>> filmGenresMap = filmGenreService.getFilmGenresByIds(filmIds);
 
