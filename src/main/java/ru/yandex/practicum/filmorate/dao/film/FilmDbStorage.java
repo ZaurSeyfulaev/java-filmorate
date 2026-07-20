@@ -39,15 +39,6 @@ public class FilmDbStorage extends BaseRepository<Film> {
     private static final String UPDATE_FILM = "UPDATE film SET name = ?, description = ?, duration = ?, release_date = ?, mpa_id =  ? " +
             " WHERE id = ?";
 
-    private static final String SELECT_FILM_GENRE = "SELECT" +
-            "    fg.film_id, " +
-            "    g.id, " +
-            "    g.name" +
-            " FROM film_genre fg" +
-            " JOIN genre g ON fg.genre_id = g.id" +
-            " ORDER BY fg.film_id";
-
-
     public FilmDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("filmRowMapper") RowMapper<Film> rowMapper) {
 
         super(jdbcTemplate, rowMapper);

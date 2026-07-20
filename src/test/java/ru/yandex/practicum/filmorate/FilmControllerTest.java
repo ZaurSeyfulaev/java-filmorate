@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.dto.filmdto.FilmDto;
 import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,6 +16,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -238,7 +240,7 @@ class FilmControllerTest {
         Film second =
                 filmController.create(createTestFilm());
 
-        Collection<Film> films =
+        List<FilmDto> films =
                 filmController.getPopularFilms(5);
 
         assertNotNull(films);
@@ -249,7 +251,7 @@ class FilmControllerTest {
     @Test
     void getPopularFilmsShouldReturnEmptyCollectionWhenNoFilms() {
 
-        Collection<Film> films =
+        List<FilmDto> films =
                 filmController.getPopularFilms(10);
 
         assertNotNull(films);
@@ -277,7 +279,6 @@ class FilmControllerTest {
 
         film.setName(
                 uniqueFilmName());
-
 
         film.setDescription(
                 "Description_" + UUID.randomUUID());

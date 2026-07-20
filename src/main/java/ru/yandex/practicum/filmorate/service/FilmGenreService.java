@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,7 +47,21 @@ public class FilmGenreService {
         filmGenreDbStorage.addFilmGenre(filmId, genreIds);
     }
 
-    public List<Genres> getFilmGenre(Long filmId) {
+    public Map<Long, List<Genres>> getFilmGenresByIds(List<Long> filmId) {
+        if (filmId == null) {
+            throw new NotFoundException("Не передан Id");
+        }
+
+        Map<Long, List<Genres>> genresMapFromStorage = filmGenreDbStorage.getFilmGenre();
+
+        Map<Long, List<Genres>> genresMap = genresMapFromStorage.entrySet().stream()
+                .filter(entry -> filmId.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return genresMap;
+    }
+
+    public List<Genres> getFilmGenreById(Long filmId) {
         if (filmId == null) {
             throw new NotFoundException("Не передан Id");
         }
@@ -54,13 +69,11 @@ public class FilmGenreService {
         Map<Long, List<Genres>> genresMap = filmGenreDbStorage.getFilmGenre();
         List<Genres> genres = genresMap.get(filmId);
 
-        log.info("genres = " + genres);
         if (genres == null || genres.isEmpty()) {
             return new ArrayList<>();
         }
         return genres;
     }
-
     public Optional<Genres> getGenreById(Long id) {
         return filmGenreDbStorage.getGenreById(id);
     }
