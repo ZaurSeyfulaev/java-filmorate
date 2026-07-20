@@ -16,7 +16,6 @@ public class FilmGenreDbStorage extends BaseRepository {
     private static final String SELECT_FILM_GENRES = "SELECT fg.film_id, gt.id, gt.name, FROM FILM_GENRE fg " +
             " JOIN GENRES gt ON fg.genre_id = gt.id";
     private static final String SELECT_GENRE_BY_ID = "SELECT * FROM GENRES WHERE id = ?";
-    ;
 
     public FilmGenreDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Genres> rowMapper) {
         super(jdbcTemplate, rowMapper);
