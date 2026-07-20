@@ -52,14 +52,12 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable Long id, @PathVariable Long userId) { //Film
         log.info("Вызван метод addLike()");
-        //return filmService.addLike(userId, id);
         filmService.addLike(userId, id);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLikeFilm(@PathVariable Long id, @PathVariable Long userId) { //Film
         log.info("Вызван метод removeLike()");
-       // return filmService.removeLike(userId, id);
         filmService.removeLike(userId, id);
     }
 

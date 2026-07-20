@@ -10,9 +10,9 @@ import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genres;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,34 +23,44 @@ public class FilmService {
     private final UserDbStorage userDbStorage;
     private final FilmDbStorage filmDbStorage;
     private final LikesDbStorage likesDbStorage;
+    private final FilmGenreService filmGenreService;
+    private final MpaService mpaService;
 
-    public FilmService(UserDbStorage userDbStorage, FilmDbStorage filmDbStorage, LikesDbStorage likesDbStorage) {
+    public FilmService(UserDbStorage userDbStorage, FilmDbStorage filmDbStorage,
+                       LikesDbStorage likesDbStorage, FilmGenreService filmGenreService, MpaService mpaService) {
         this.userDbStorage = userDbStorage;
         this.filmDbStorage = filmDbStorage;
         this.likesDbStorage = likesDbStorage;
+        this.filmGenreService = filmGenreService;
+        this.mpaService = mpaService;
     }
 
     public List<FilmDto> getFilms() {
         return filmDbStorage.getAllFilms()
                 .stream()
+                .peek(film -> {
+                    filmGenreService.getFilmGenre(film.getId());
+                })
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 
     public Film getFilmById(Long id) {
-        return filmDbStorage.getFilmById(id).orElseThrow(()
+        Film film = filmDbStorage.getFilmById(id).orElseThrow(()
                 -> new NotFoundException("Фильм с id = " + id + " не найден"));
+        List<Genres> genre = filmGenreService.getFilmGenre(film.getId());
+        film.setGenres(genre);
+        return film;
     }
 
     public void addLike(Long userId, Long filmId) {
         validateIdsNotNull(userId, filmId);
 
-        filmDbStorage.getFilmById(filmId)
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
-
+        //Уже есть в сервисе метод? который возвращает фильм по id
+        // Выбрасывает исключение если фильм не найден
+        getFilmById(filmId);
+        checkUserExists(userId);
         log.info("Попытка лайкнуть фильм");
-        userDbStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь c id = " + userId + " не найден"));
         likesDbStorage.addLike(userId, filmId);
         log.info("Лайк добавлен");
 
@@ -58,20 +68,25 @@ public class FilmService {
 
     public void removeLike(Long userId, Long filmId) {
         validateIdsNotNull(userId, filmId);
-        filmDbStorage.getFilmById(filmId)
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
-        userDbStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь c id = " + userId + " не найден"));
-
+        getFilmById(filmId);
+        checkUserExists(userId);
         log.info("Попытка удалить лайк");
         likesDbStorage.removeLike(userId, filmId);
         log.info("Лайк успешно удален");
     }
 
-    public Collection<Film> getTopFilm(int count) {
+    public List<Film> getTopFilm(int count) {
         if (count <= 0) {
             throw new ConditionsNotMetException("Значение count должно быть положительным числом");
         }
+        List<Film> topFilms = filmDbStorage.getTopFilms(count);
+        topFilms.stream()
+                .peek(film -> {
+                    filmGenreService.getFilmGenre(film.getId());
+                })
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+
         return filmDbStorage.getTopFilms(count);
     }
 
@@ -80,7 +95,10 @@ public class FilmService {
         validateFilmDescription(film);
         validateFilmReleaseDate(film);
         validateFilmDuration(film);
-        return filmDbStorage.createFilm(film);
+        validateMpa(film);
+        Film createdFilm = filmDbStorage.createFilm(film);
+        filmGenreService.addFilmGenre(createdFilm);
+        return createdFilm;
     }
 
     public Film updateFilm(Film newFilm) {
@@ -88,8 +106,8 @@ public class FilmService {
             log.warn("ID должен быть указан");
             throw new ConditionsNotMetException("ID должен быть указан");
         }
-        filmDbStorage.getFilmById(newFilm.getId())
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден"));
+
+        getFilmById(newFilm.getId());
 
         if (newFilm.getName() != null) {
             validateFilmName(newFilm);
@@ -105,6 +123,11 @@ public class FilmService {
             validateFilmDuration(newFilm);
         }
         return filmDbStorage.updateFilm(newFilm);
+    }
+
+    private void checkUserExists(Long userId) {
+        userDbStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь c id = " + userId + " не найден"));
     }
 
     private void validateIdsNotNull(Long userId, Long filmId) {
@@ -145,5 +168,9 @@ public class FilmService {
         if (film.getDuration() <= 0) {
             throw new ConditionsNotMetException("Длительность должна быть положительной");
         }
+    }
+
+    private void validateMpa(Film film) {
+        mpaService.getMpaId(film);
     }
 }

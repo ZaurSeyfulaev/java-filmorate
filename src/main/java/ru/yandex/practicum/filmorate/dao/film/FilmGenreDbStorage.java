@@ -1,43 +1,29 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.BaseRepository;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genres;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 
 @Repository
 public class FilmGenreDbStorage extends BaseRepository {
     private static final String ADD_FILM_GENRE = "INSERT INTO FILM_GENRE (film_id, genre_id) VALUES (?, ?)";
-    private static final String SELECT_FILM_GENRES = "SELECT gt.* FROM FILM_GENRE fg " +
-            " JOIN GENRES gt ON fg.genre_id = gt.id WHERE fg.film_id = ?";
+    private static final String SELECT_FILM_GENRES = "SELECT fg.film_id, gt.id, gt.name, FROM FILM_GENRE fg " +
+            " JOIN GENRES gt ON fg.genre_id = gt.id";
     private static final String SELECT_GENRE_BY_ID = "SELECT * FROM GENRES WHERE id = ?";
+    ;
 
     public FilmGenreDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Genres> rowMapper) {
         super(jdbcTemplate, rowMapper);
+
     }
 
-    public void addFilmGenre(Film film) {
-        List<Genres> filmGenres = film.getGenres();
-        Long filmId = film.getId();
-        if (filmGenres == null || filmGenres.isEmpty()) {
-            return;
-        }
-        List<Long> genreIds = filmGenres
-                .stream()
-                .map(Genres::getId)
-                .map(id -> {
-                            getGenreById(id).orElseThrow(() ->
-                                    new NotFoundException("Genre с id " + filmId + " не найден"));
-                            return id;
-                        }
-                ).distinct()
-                .toList();
+    public void addFilmGenre(Long filmId, List<Long> genreIds) {
 
         getJdbcTemplate().batchUpdate(ADD_FILM_GENRE, genreIds, genreIds.size(),
                 (ps, genreId) -> {
@@ -46,8 +32,19 @@ public class FilmGenreDbStorage extends BaseRepository {
                 });
     }
 
-    public List<Genres> getFilmGenre(Long filmId) {
-        return findMany(SELECT_FILM_GENRES, filmId);
+    public Map<Long, List<Genres>> getFilmGenre() {
+        Map<Long, List<Genres>> mapGenres = new HashMap<>();
+        getJdbcTemplate().query(SELECT_FILM_GENRES, rs -> {
+                    Long filmId = rs.getLong("film_id");
+                    Genres genre = new Genres();
+                    genre.setId(rs.getLong("id"));
+                    genre.setName(rs.getString("name"));
+                    mapGenres.putIfAbsent(filmId, new ArrayList<>());
+                    mapGenres.get(filmId).add(genre);
+                }
+        );
+
+        return mapGenres;
     }
 
     public Optional<Genres> getGenreById(Long id) {

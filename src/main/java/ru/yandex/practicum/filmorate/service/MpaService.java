@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.dao.film.MpaDbStorage;
 import ru.yandex.practicum.filmorate.dto.filmdto.MpaDto;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.MpaMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
@@ -26,8 +27,24 @@ public class MpaService {
     }
 
     public MpaDto getMpaById(Long id) {
-        Mpa mpa =  mpaDbStorage.selectMpaById(id).orElseThrow(() ->
+        Mpa mpa = mpaDbStorage.selectMpaById(id).orElseThrow(() ->
                 new NotFoundException("Mpa с id = " + id + " не найден"));
         return MpaMapper.mapToMpaDto(mpa);
     }
+
+    public Long getMpaId(Film film) {
+        Long mpaId;
+        if (film.getMpa() == null) {
+            return null;
+        } else {
+            mpaId = film.getMpa().getId();
+            MpaDto mpa = getMpaById(mpaId);
+            if (mpa == null) {
+                throw new NotFoundException("Рейтинг" +
+                        " с id = " + mpaId + " не найден");
+            }
+        }
+        return mpaDbStorage.getMpaId(film);
+    }
+
 }
