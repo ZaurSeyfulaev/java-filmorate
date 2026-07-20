@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.film.LikesDbStorage;
-import ru.yandex.practicum.filmorate.dao.mapper.filmmappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.dto.filmdto.FilmDto;
 import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
@@ -18,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
